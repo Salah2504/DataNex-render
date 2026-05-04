@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+    <title>DataNex AI</title>
+	<link rel="stylesheet" href="/static/style.css">
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
+</head>
+
+<body>
+
+<div class="sidebar">
+    <h2>🚀 DataNex AI</h2>
+	<p style="font-size:12px;color:#94a3b8;">
+	AI-powered Informix SQL Generator
+	</p>
+    <button onclick="clearChat()">Clear Chat</button>
+</div>
+
+<div class="main">
+    <div id="chat" class="chat"></div>
+
+    <div class="input-area">
+        <input id="prompt" placeholder="Ask for an Informix query..." />
+       <button type="button" onclick="send()">Send</button> 
+		
+    </div>
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>

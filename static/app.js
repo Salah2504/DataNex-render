@@ -1,130 +1,97 @@
-// app.js
-let messages = JSON.parse(localStorage.getItem("chat")) || [];
-// app.js
-
-
-function saveMessages() {
-    localStorage.setItem("chat", JSON.stringify(messages));
+id="clean1"
+function cleanSQL(text) {
+    return text
+        .replace(/```sql/g, "")
+        .replace(/```/g, "")
+        .trim();
 }
+async function askAI() {
 
-function renderMessages() {
-    let chat = document.getElementById("chat");
-    chat.innerHTML = "";
+    const questionInput = document.getElementById("question");
+    const chatBox = document.getElementById("chatBox");
 
-    messages.forEach(msg => {
-        let div = createMessageElement(msg.text, msg.type, msg.isSQL);
-        chat.appendChild(div);
-    });
+    const question = questionInput.value.trim();
 
-    chat.scrollTop = chat.scrollHeight;
-}
+    if (!question) return;
 
-async function send() {
-	let button = document.querySelector("button");
-	button.disabled = true;
-    let input = document.getElementById("prompt");
-    let userText = input.value;
+    chatBox.innerHTML += `
+        <div class="message user">
+            <strong>You:</strong>
+            <p>${question}</p>
+        </div>
+    `;
 
-    if (!userText) return;
+    chatBox.innerHTML += `
+        <div class="message loading" id="loading">
+            ⏳ Generating SQL...
+        </div>
+    `;
 
-    addMessage(userText, "user");
-    input.value = "";
-
-    let loading = addMessage("⚡ Generating SQL...", "ai");
+    questionInput.value = "";
 
     try {
-        let res = await fetch("/ask", {
+
+        const response = await fetch("/ask", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify({
-                question: userText,
-                session_id: "default"
+                question: question,
+                session_id: "web-user"
             })
         });
 
-        console.log("STATUS:", res.status);
+        const data = await response.json();
 
-        let text = await res.text();
-        console.log("RAW:", text);
-
-        let data = JSON.parse(text);
-
-        loading.remove();
-
-        if (data.response) {
-			let clean = data.response
-				.replace(/```sql/gi, "")
-				.replace(/```/g, "")
-				.replace(/^\s+|\s+$/g, "")
-				.trim();
+		console.log(data);
 		
-			addMessage(clean, "ai", true);
-		} else if (data.detail) {
-            addMessage("❌ " + data.detail, "ai");
-        } else {
-            addMessage("⚠️ Unknown error", "ai");
-        }
+		const loading = document.getElementById("loading");
 
-    } catch (err) {
-        console.error("🔥 ERROR:", err);
-        loading.remove();
-        addMessage("⚠️ Check console", "ai");
-    }
-	button.disabled = false;
-}
+		if (loading) {
+		loading.remove();
+		}
+		
+		if (data.response) {
+			let cleanResponse = cleanSQL(data.response);
 
-function addMessage(text, type, isSQL=false) {
-    let chat = document.getElementById("chat");
+			chatBox.innerHTML += `
+				<div class="message ai">
+					<strong>DataNex AI:</strong>
+					<pre>${cleanResponse}</pre>
+				</div>
+			`;
+			/*
+			chatBox.innerHTML += `
+				<div class="message ai">
+					<strong>DataNex AI:</strong>
+					<pre>${data.response}</pre>
+				</div>
+			`;
+		    */
+		} else {
+		
+			chatBox.innerHTML += `
+				<div class="message error">
+					❌ ${data.error || data.detail || "Unknown Error"}
+				</div>
+			`;
+		}
 
-    let msg = { text, type, isSQL };
-    messages.push(msg);
-    saveMessages();
+    } catch (error) {
 
-    let div = createMessageElement(text, type, isSQL);
-    chat.appendChild(div);
+        const loading = document.getElementById("loading");
 
-    chat.scrollTop = chat.scrollHeight;
+		if (loading) {
+		loading.remove();
+		}
 
-    return div;
-}
-
-function createMessageElement(text, type, isSQL=false) {
-    let div = document.createElement("div");
-    div.className = "message " + type;
-
-    let content = document.createElement("div");
-
-    if (isSQL) {
-        let pre = document.createElement("pre");
-        let code = document.createElement("code");
-
-        code.className = "language-sql";
-        code.innerText = text;
-
-        pre.appendChild(code);
-        content.appendChild(pre);
-
-        setTimeout(() => Prism.highlightElement(code), 0);
-    } else {
-        content.innerText = text;
+        chatBox.innerHTML += `
+            <div class="message error">
+                ❌ Error generating SQL
+            </div>
+        `;
     }
 
-    div.appendChild(content);
-
-    return div;
+    chatBox.scrollTop = chatBox.scrollHeight;
 }
-
-function clearChat() {
-    messages = [];
-    saveMessages();
-    renderMessages();
-}
-
-document.getElementById("prompt").addEventListener("keypress", function(e) {
-    if (e.key === "Enter") send();
-});
-
-renderMessages();
-

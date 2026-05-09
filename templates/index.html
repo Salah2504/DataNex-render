@@ -1,33 +1,27 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DataNex AI</title>
-	<link rel="stylesheet" href="/static/style.css">
-	<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-sql.min.js"></script>
-</head>
 
+    <link rel="stylesheet" href="/static/style.css">
+</head>
 <body>
 
-<div class="sidebar">
-    <h2>🚀 DataNex AI</h2>
-	<p style="font-size:12px;color:#94a3b8;">
-	AI-powered Informix SQL Generator
-	</p>
-    <button onclick="clearChat()">Clear Chat</button>
+<div class="container">
+
+    <h1>🚀 DataNex AI</h1>
+
+    <div class="chat-box" id="chatBox"></div>
+
+    <textarea id="question" placeholder="Ask Informix SQL question..."></textarea>
+
+    <button onclick="askAI()">Generate SQL</button>
+
 </div>
 
-<div class="main">
-    <div id="chat" class="chat"></div>
-
-    <div class="input-area">
-        <input id="prompt" placeholder="Ask for an Informix query..." />
-       <button type="button" onclick="send()">Send</button> 
-		
-    </div>
-</div>
 <script src="/static/app.js"></script>
+
 </body>
 </html>

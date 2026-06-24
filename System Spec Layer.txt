@@ -1,0 +1,217 @@
+تمام جدًا 👌 وهذا بالضبط ما يسمى في هندسة الأنظمة:
+
+> **Design Contract / System Spec Layer**
+
+خلينا نحول كل اللي بنيناه إلى “رؤية واضحة” بدل ما يكون مجرد كود متفرق.
+
+---
+
+# 🧠 DataNex AI — Core Design Contract (v1)
+
+## 1. الهدف الأساسي
+
+```text id="a1"
+تحويل النص الطبيعي إلى SQL صالح وقابل للتنفيذ مع أقل افتراضات ممكنة وأكثر اتساق منطقي.
+```
+
+---
+
+## 2. مبدأ التصميم الأساسي
+
+```text id="b1"
+لا يتم اتخاذ أي قرار SQL إلا بناءً على:
+- schema
+- prompt semantics
+- relationships
+```
+
+❌ ممنوع التخمين العشوائي
+❌ ممنوع hardcoding خارج الدومين التجريبي
+
+---
+
+## 3. Intent Detection
+
+```python id="c1"
+intent ∈ {raw, report, kpi}
+```
+
+### قواعد:
+
+* `report` → فيه aggregation أو grouping
+* `kpi` → فيه function (AVG, SUM, MAX...)
+* `raw` → بدون aggregation
+
+---
+
+## 4. Aggregation Layer
+
+```python id="d1"
+aggregation_function ∈ {SUM, AVG, MAX, MIN, COUNT}
+```
+
+### مبدأ مهم:
+
+```text id="d2"
+Aggregation function ≠ Aggregation meaning
+```
+
+---
+
+## 5. Smart COUNT Layer (Domain-specific)
+
+```python id="e1"
+COUNT is NOT a single behavior
+```
+
+### الأنواع:
+
+#### 1. Rows Count
+
+```sql id="e2"
+COUNT(*)
+```
+
+#### 2. Products Count
+
+```sql id="e3"
+COUNT(DISTINCT prod_id)
+```
+
+#### 3. Factory Count
+
+```sql id="e4"
+COUNT(DISTINCT factory_id)
+```
+
+#### 4. Production Count
+
+```sql id="e5"
+COUNT(qty)
+```
+
+---
+
+## 6. Ranking Layer
+
+```python id="f1"
+ranking = {
+    "type": "top",
+    "limit": N
+}
+```
+
+### Rule:
+
+* ranking always affects ORDER BY + LIMIT
+* never changes aggregation logic
+
+---
+
+## 7. Date Engine v1 (Relative Time Model)
+
+```python id="g1"
+time_filter = {
+    type: relative_period
+}
+```
+
+### Mapping:
+
+| Period | Meaning          |
+| ------ | ---------------- |
+| day    | TODAY - offset   |
+| month  | rolling 30 days  |
+| year   | rolling 365 days |
+
+---
+
+## 8. JOIN Engine
+
+```text id="h1"
+Join only when relationship score exists
+```
+
+### Rule:
+
+```text id="h2"
+Base table = first valid left_table
+```
+
+---
+
+## 9. Column Selection Rule
+
+```text id="i1"
+Columns are selected based on:
+- semantic match
+- required tables
+- aggregation context
+```
+
+---
+
+## 10. Query Construction Order (Important جدًا)
+
+```text id="j1"
+1. detect intent
+2. detect aggregation
+3. detect count target
+4. detect time filter
+5. detect ranking
+6. detect required tables
+7. build joins
+8. select columns
+9. apply grouping
+10. apply ordering
+11. apply limit
+```
+
+---
+
+## 11. Golden Rule
+
+```text id="k1"
+No stage is allowed to override a later semantic decision unless explicitly designed.
+```
+
+---
+
+# 🔥 لماذا هذا مهم؟
+
+لأن هذا يحول النظام من:
+
+> مجموعة functions
+
+إلى:
+
+> Engine له قوانين ثابتة
+
+---
+
+# 📌 الخطوة القادمة (لو حابب نكمل صح)
+
+بعد هذا الـ Contract، الخطوة الطبيعية هي:
+
+## → تحويله إلى Code Enforcement Layer
+
+يعني:
+
+* assertions
+* validation
+* debug trace
+* query plan verification
+
+---
+
+لكن الأهم الآن:
+
+🎯 عندك “رؤية نظام” واضحة
+🎯 وعندك “قواعد” بدل تخمين
+🎯 وعندك أساس لبناء SaaS حقيقي
+
+---
+
+لو تحب في الجلسة القادمة نقدر نعمل خطوة قوية جدًا:
+
+> نحول هذا الـ Contract إلى **Query Plan Validator** يكتشف الأخطاء قبل توليد SQL 🚀

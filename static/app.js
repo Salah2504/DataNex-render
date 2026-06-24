@@ -1,3 +1,4 @@
+const chatBox = document.getElementById("chatBox");
 id="clean1"
 function cleanSQL(text) {
     return text
@@ -5,27 +6,31 @@ function cleanSQL(text) {
         .replace(/```/g, "")
         .trim();
 }
+
+function addMessage(type, content) {
+    const div = document.createElement("div");
+    div.className = `message ${type}`;
+
+    if (type === "loading") {
+        div.id = "loading";
+    }
+
+    div.innerHTML = content;
+    chatBox.appendChild(div);
+
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
 async function askAI() {
 
     const questionInput = document.getElementById("question");
-    const chatBox = document.getElementById("chatBox");
-
+    
     const question = questionInput.value.trim();
 
     if (!question) return;
+	addMessage("user", `<strong>You:</strong><p>${question}</p>`);
 
-    chatBox.innerHTML += `
-        <div class="message user">
-            <strong>You:</strong>
-            <p>${question}</p>
-        </div>
-    `;
-
-    chatBox.innerHTML += `
-        <div class="message loading" id="loading">
-            ⏳ Generating SQL...
-        </div>
-    `;
+	addMessage("loading", `⏳ Generating SQL...`);
 
     questionInput.value = "";
 
@@ -54,28 +59,11 @@ async function askAI() {
 		
 		if (data.response) {
 			let cleanResponse = cleanSQL(data.response);
+			addMessage("ai", `<strong>DataNex AI:</strong><pre>${cleanResponse}</pre>`);
 
-			chatBox.innerHTML += `
-				<div class="message ai">
-					<strong>DataNex AI:</strong>
-					<pre>${cleanResponse}</pre>
-				</div>
-			`;
-			/*
-			chatBox.innerHTML += `
-				<div class="message ai">
-					<strong>DataNex AI:</strong>
-					<pre>${data.response}</pre>
-				</div>
-			`;
-		    */
 		} else {
-		
-			chatBox.innerHTML += `
-				<div class="message error">
-					❌ ${data.error || data.detail || "Unknown Error"}
-				</div>
-			`;
+			addMessage("error", `❌ ${data.error || data.detail || "Unknown Error"}`);
+
 		}
 
     } catch (error) {
@@ -85,13 +73,8 @@ async function askAI() {
 		if (loading) {
 		loading.remove();
 		}
+		addMessage("error", `❌ Error generating SQL`);
 
-        chatBox.innerHTML += `
-            <div class="message error">
-                ❌ Error generating SQL
-            </div>
-        `;
     }
 
-    chatBox.scrollTop = chatBox.scrollHeight;
-}
+ }

@@ -54,11 +54,6 @@ DataNex-AI/
 ├── Structure.txt
 
 
-DataNex AI v3
-✓ Aggregation Engine
-✓ Ranking Engine
-✓ Date Engine v1
-
 Date Engine v2
 - Calendar Month
 - Calendar Quarter
